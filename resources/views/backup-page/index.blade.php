@@ -93,6 +93,7 @@
                     <p>Contestants pay a one-time <span class="highlight">$5 fee</span> to prove they are real and join
                         the competition</p>
                     <div class="step-number">01</div>
+                    php artisan make:controller indexController -r
                 </div>
 
                 <div class="step-card" data-aos="fade-up" data-aos-delay="300">
@@ -129,10 +130,11 @@
 
 
 
-    </section>
+
 
     <!-- Rules & Legal -->
     <section id="rules" class="rules">
+
         <div class="container">
             <h2 class="section-title" data-aos="fade-up" >Rules & Competition Guidelines</h2>
 
@@ -178,6 +180,7 @@
                 <button class="btn btn-outline">Read Full Rules & Terms</button>
             </div>
         </div>
+
     </section>
 
     <!-- Call to Action -->
