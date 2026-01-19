@@ -114,6 +114,12 @@
         </div>
     </section>
 
+
+
+
+
+
+
     <!-- Regions Section -->
     <section id="regions" class="regions">
 
@@ -128,7 +134,7 @@
     <!-- Rules & Legal -->
     <section id="rules" class="rules">
         <div class="container">
-            <h2 class="section-title" data-aos="fade-up">Rules & Competition Guidelines</h2>
+            <h2 class="section-title" data-aos="fade-up" >Rules & Competition Guidelines</h2>
 
             <div class="rules-grid">
                 <div class="rule-card" data-aos="fade-up" data-aos-delay="100">
