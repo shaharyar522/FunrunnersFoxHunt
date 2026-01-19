@@ -76,6 +76,7 @@
         <div class="hero-footer">
             <p>Already a member? <a href="#login" class="scroll-link">Sign in now</a></p>
         </div>
+
     </section>
 
     <!-- How It Works -->
@@ -115,7 +116,12 @@
 
     <!-- Regions Section -->
     <section id="regions" class="regions">
-        <img src="{{ asset('images/world.png') }}" alt="Asia" class="region-img" />
+
+      {{-- regions image is here in this . --}}
+
+    </section>
+
+
 
     </section>
 
