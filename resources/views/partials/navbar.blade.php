@@ -2,10 +2,12 @@
  <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
+            
             <div class="nav-logo">
                 {{-- <span class="fox-icon">🦊</span> --}}
                 <span class="logo-text">FunrunnersFoxHunt</span>
             </div>
+
             <div class="nav-menu">
                 <a href="#hero" class="nav-link">Home</a>
                 <a href="#how-it-works" class="nav-link">How It Works</a>

@@ -124,7 +124,7 @@
     <!-- Regions Section -->
     <section id="regions" class="regions">
 
-      {{-- regions image is here in this . --}}
+        {{-- regions image is here in this . --}}
 
     </section>
 
@@ -136,7 +136,7 @@
     <section id="rules" class="rules">
 
         <div class="container">
-            <h2 class="section-title" data-aos="fade-up" >Rules & Competition Guidelines</h2>
+            <h2 class="section-title" data-aos="fade-up">Rules & Competition Guidelines</h2>
 
             <div class="rules-grid">
                 <div class="rule-card" data-aos="fade-up" data-aos-delay="100">
@@ -189,7 +189,6 @@
             <h2 class="cta-title" data-aos="fade-up">Ready to Join?</h2>
             <p class="cta-subtitle" data-aos="fade-up" data-aos-delay="100">Sign up with your preferred social media
                 account</p>
-
             <div class="social-login" data-aos="fade-up" data-aos-delay="200">
                 <button class="social-btn google-btn">
                     <span class="icon">G</span>
