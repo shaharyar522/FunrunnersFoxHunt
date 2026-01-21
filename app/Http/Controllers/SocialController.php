@@ -19,10 +19,12 @@ class SocialController extends Controller
 
     public function handleGoogleCallback()
     {
+
         $socialUser = Socialite::driver('google')->user();
         $user = $this->findOrCreateUser($socialUser, 'google');
         Auth::login($user);
         return $this->redirectToDashboard($user);
+        
     }
 
     // -------------------
@@ -91,4 +93,5 @@ class SocialController extends Controller
         if ($user->role == 'member') return redirect('/member-dashboard');
         return redirect('/admin-dashboard');
     }
+
 }

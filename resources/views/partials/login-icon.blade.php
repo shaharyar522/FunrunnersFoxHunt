@@ -6,6 +6,7 @@
 
             <p class="cta-subtitle" data-aos="fade-up" data-aos-delay="100">Sign up with your preferred social media
                 account</p>
+                
             <div class="social-login" data-aos="fade-up" data-aos-delay="200">
 
                 <form action="{{ route('google-login') }}" method="get">
@@ -15,8 +16,6 @@
                     </button>
                 </form>
 
-
-
                 <form action="{{ route('twitter.login') }}" method="get">
                     <button class="social-btn twitter-btn">
                         <span class="icon">𝕏</span>
@@ -24,13 +23,12 @@
                     </button>
                 </form>
 
-
-                <button class="social-btn facebook-btn">
-                    <span class="icon">f</span>
-                    <span class="text">Continue with Facebook</span>
-                </button>
-
-
+                <form action="" method="get">
+                    <button class="social-btn facebook-btn">
+                        <span class="icon">f</span>
+                        <span class="text">Continue with Facebook</span>
+                    </button>
+                </form>
 
             </div>
 

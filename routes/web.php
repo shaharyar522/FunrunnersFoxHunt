@@ -3,6 +3,7 @@
 use App\Http\Controllers\indexController;
 use App\Http\Controllers\SocialController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\AdminController;
 
 Route::get('/', [indexController::class, 'index']);
 
@@ -24,4 +25,17 @@ Route::get('login/facebook', [SocialController::class, 'redirectToFacebookMock']
 
 
 
-// ================================================= login with Social icon =================================================
+// ================================================= Admin Routes =================================================
+
+
+Route::prefix('admin')->group(function () {
+    Route::get('login', [AdminController::class, 'showLogin'])->name('admin.login');
+    Route::post('login', [AdminController::class, 'login'])->name('admin.login.post');
+    Route::post('logout', [AdminController::class, 'logout'])->name('admin.logout');
+
+    Route::middleware(['admin'])->group(function () {
+        Route::get('/', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    });
+});
+// ================================================= Admin Routes =================================================
+
