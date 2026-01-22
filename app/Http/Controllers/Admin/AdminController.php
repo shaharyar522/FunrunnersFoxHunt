@@ -6,6 +6,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+use App\Models\Voting;
+use App\Models\VotingContestant;
+use App\Models\Member;
+use App\Models\Contestant;
+
 class AdminController extends Controller
 {
     public function showLogin()
@@ -40,11 +45,54 @@ class AdminController extends Controller
         return view('admin.dashboard');
     }
 
+    public function votingList()
+    {
+        $votings = Voting::orderBy('created_at', 'desc')->get();
+        return view('admin.voting.list', compact('votings'));
+    }
+
+    public function votingDetail($id)
+    {
+        
+        $voting = Voting::with('contestants.contestant')->findOrFail($id);
+        return view('admin.voting.detail', compact('voting'));
+
+    }
+
+    public function updateContestantStatus(Request $request, $id)
+    {
+
+        $vc = VotingContestant::findOrFail($id);
+        $vc->status = $request->status;
+        $vc->save();
+
+        return back()->with('success', 'Status updated successfully.');
+
+    }
+
+    public function membersList()
+    {
+
+        $members = Member::all();
+        return view('admin.members.list', compact('members'));
+
+    }
+
+    public function contestantsList()
+    {
+
+        $contestants = Contestant::all();
+        return view('admin.contestants.list', compact('contestants'));
+
+    }
+
     public function logout(Request $request)
     {
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('admin.login');
+        return redirect()->route('login');
+
     }
 }

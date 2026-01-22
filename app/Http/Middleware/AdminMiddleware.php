@@ -14,12 +14,17 @@ class AdminMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
+
+    // mtlb k agr .uay middleware admin k leuy hain agr us ka roles admin  hnga tu next request par jain ga
+    // ohter wise redirect karay ga admin login pagr par. right now..
+
+    
     public function handle(Request $request, Closure $next): Response
     {
         if (Auth::check() && Auth::user()->role === 'admin') {
             return $next($request);
         }
 
-        return redirect()->route('admin.login')->with('error', 'You do not have admin access.');
+        return redirect()->route('login')->with('error', 'You do not have admin access.');
     }
 }
