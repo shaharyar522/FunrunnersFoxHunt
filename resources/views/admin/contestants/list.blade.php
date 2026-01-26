@@ -37,11 +37,14 @@
                         @endif
                     </td>
                     <td class="px-8 py-5">
-                        @if($contestant->status == 1)
-                            <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">Approved</span>
-                        @else
-                            <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">Pending</span>
-                        @endif
+                        <button 
+                            onclick="toggleStatus({{ $contestant->id }}, {{ $contestant->status }}, this)"
+                            class="px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 hover:scale-105 cursor-pointer status-btn-{{ $contestant->id }} 
+                            @if($contestant->status == 1) bg-blue-100 text-blue-700 hover:bg-blue-200 @else bg-gray-100 text-gray-700 hover:bg-gray-200 @endif">
+                            <span class="status-text-{{ $contestant->id }}">
+                                @if($contestant->status == 1) Approved @else Pending @endif
+                            </span>
+                        </button>
                     </td>
                 </tr>
                 @endforeach
@@ -49,4 +52,101 @@
         </table>
     </div>
 </div>
+
+<script>
+function toggleStatus(contestantId, currentStatus, button) {
+    // Calculate new status (toggle between 0 and 1)
+    const newStatus = currentStatus === 1 ? 0 : 1;
+    
+    // Disable button during request
+    button.disabled = true;
+    button.style.opacity = '0.6';
+    
+    // Send AJAX request
+    fetch(`/admin/contestants/${contestantId}/toggle-status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update button appearance
+            const statusText = button.querySelector(`.status-text-${contestantId}`);
+            
+            if (newStatus === 1) {
+                button.className = `px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 hover:scale-105 cursor-pointer status-btn-${contestantId} bg-blue-100 text-blue-700 hover:bg-blue-200`;
+                statusText.textContent = 'Approved';
+            } else {
+                button.className = `px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 hover:scale-105 cursor-pointer status-btn-${contestantId} bg-gray-100 text-gray-700 hover:bg-gray-200`;
+                statusText.textContent = 'Pending';
+            }
+            
+            // Update onclick to use new status
+            button.setAttribute('onclick', `toggleStatus(${contestantId}, ${newStatus}, this)`);
+            
+            // Show success feedback
+            button.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                button.style.transform = 'scale(1)';
+            }, 200);
+
+            // Show success message
+            showSuccessMessage('Contestant status is updated');
+        } else {
+            alert('Failed to update status. Please try again.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    })
+    .finally(() => {
+        button.disabled = false;
+        button.style.opacity = '1';
+    });
+}
+
+function showSuccessMessage(message) {
+    // Create toast notification
+    const toast = document.createElement('div');
+    toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2 z-50 animate-slide-in';
+    toast.innerHTML = `
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <span class="font-medium">${message}</span>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(100%)';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+</script>
+
+<style>
+@keyframes slide-in {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.animate-slide-in {
+    animation: slide-in 0.3s ease-out;
+    transition: all 0.3s ease-out;
+}
+</style>
 @endsection

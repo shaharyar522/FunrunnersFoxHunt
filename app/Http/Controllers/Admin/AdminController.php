@@ -86,6 +86,19 @@ class AdminController extends Controller
 
     }
 
+    public function toggleContestantStatus(Request $request, $id)
+    {
+        $contestant = Contestant::findOrFail($id);
+        $contestant->status = $request->input('status');
+        $contestant->save();
+
+        return response()->json([
+            'success' => true,
+            'status' => $contestant->status,
+            'message' => 'Status updated successfully'
+        ]);
+    }
+
     public function logout(Request $request)
     {
 

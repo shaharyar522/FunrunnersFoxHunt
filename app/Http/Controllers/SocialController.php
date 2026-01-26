@@ -12,42 +12,53 @@ class SocialController extends Controller
     // -------------------
     // GOOGLE LOGIN
     // -------------------
-    public function redirectToGoogle()
+    public function redirectToGoogle(Request $request)
     {
+        if ($request->has('role')) {
+            session(['intended_role' => $request->role]);
+        }
         return Socialite::driver('google')->redirect();
     }
 
     public function handleGoogleCallback()
     {
-
         $socialUser = Socialite::driver('google')->user();
-        $user = $this->findOrCreateUser($socialUser, 'google');
+        $role = session('intended_role', 'member'); // Default to member if not set
+        $user = $this->findOrCreateUser($socialUser, 'google', $role);
         Auth::login($user);
-        return $this->redirectToDashboard($user);
         
+        session()->forget('intended_role');
+        return $this->redirectToDashboard($user);
     }
 
     // -------------------
     // TWITTER/X LOGIN
     // -------------------
-    public function redirectToTwitter()
+    public function redirectToTwitter(Request $request)
     {
+        if ($request->has('role')) {
+            session(['intended_role' => $request->role]);
+        }
         return Socialite::driver('twitter')->redirect();
     }
 
     public function handleTwitterCallback()
     {
         $socialUser = Socialite::driver('twitter')->user();
-        $user = $this->findOrCreateUser($socialUser, 'twitter');
+        $role = session('intended_role', 'member');
+        $user = $this->findOrCreateUser($socialUser, 'twitter', $role);
         Auth::login($user);
+        
+        session()->forget('intended_role');
         return $this->redirectToDashboard($user);
     }
 
     // -------------------
     // FACEBOOK LOGIN MOCK
     // -------------------
-    public function redirectToFacebookMock()
+    public function redirectToFacebookMock(Request $request)
     {
+        $role = $request->get('role', 'member');
         $user = User::firstOrCreate(
             ['email' => 'fbuser@test.com'],
             [
@@ -55,6 +66,7 @@ class SocialController extends Controller
                 'provider' => 'facebook',
                 'provider_id' => '12345',
                 'password' => bcrypt(uniqid()),
+                'role' => $role
             ]
         );
         Auth::login($user);
@@ -64,7 +76,7 @@ class SocialController extends Controller
     // -------------------
     // HELPER: Find or create user
     // -------------------
-    private function findOrCreateUser($socialUser, $provider)
+    private function findOrCreateUser($socialUser, $provider, $role)
     {
         $user = User::where('provider_id', $socialUser->id)
                     ->where('provider', $provider)
@@ -76,8 +88,16 @@ class SocialController extends Controller
                 'email' => $socialUser->email ?? $socialUser->id.'@'.$provider.'.com',
                 'provider' => $provider,
                 'provider_id' => $socialUser->id,
+                'role' => $role,
                 'password' => bcrypt(uniqid()), // dummy password
             ]);
+        } else {
+            // FOR TESTING: Update role if user exists but wants to switch roles
+            // In a strict production environment, you might prevent this, but for testing it's essential.
+            if ($user->role !== $role) {
+                $user->role = $role;
+                $user->save();
+            }
         }
 
         return $user;
@@ -89,9 +109,9 @@ class SocialController extends Controller
     private function redirectToDashboard($user)
     {
         // Assuming your users table has a 'role' column: 'contestant', 'member', 'admin'
-        if ($user->role == 'contestant') return redirect('/contestant-dashboard');
-        if ($user->role == 'member') return redirect('/member-dashboard');
-        return redirect('/admin-dashboard');
+        if ($user->role == 'contestant') return redirect()->route('contestant.dashboard');
+        if ($user->role == 'member') return redirect()->route('member.dashboard');
+        return redirect()->route('admin.dashboard');
     }
 
 }

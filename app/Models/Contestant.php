@@ -10,9 +10,12 @@ class Contestant extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'name',
         'email',
-        'region',
+        'region_id',
+        'age',
+        'bio',
         'image',
         'payment_status',
         'status',
@@ -35,4 +38,10 @@ class Contestant extends Model
     {
         return $this->hasMany(VotingContestant::class, 'contestant_id');
     }
+
+     public function region()
+{
+    return $this->belongsTo(Region::class);
+}
+
 }

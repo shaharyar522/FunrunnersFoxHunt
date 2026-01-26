@@ -31,11 +31,11 @@
 
          <div class="hero-buttons" data-aos="fade-up" data-aos-delay="400">
 
-             <a href="#login" style="text-decoration: none;">
+             <a href="{{ route('google-login', ['role' => 'contestant']) }}" style="text-decoration: none;">
                  <button class="btn btn-primary">Join as Contestant</button>
              </a>
 
-             <a href="#login" style="text-decoration: none;">
+             <a href="{{ route('google-login', ['role' => 'member']) }}" style="text-decoration: none;">
                  <button class="btn btn-secondary">Join as Member</button>
              </a>
              

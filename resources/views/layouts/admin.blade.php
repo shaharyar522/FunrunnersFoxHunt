@@ -29,10 +29,10 @@
             <a href="{{ route('admin.voting.list') }}" class="block px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.voting.*') ? 'bg-blue-600 font-medium text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800' }} transition-all">
                 Voting
             </a>
-            <a href="" class="block px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.members.*') ? 'bg-blue-600 font-medium text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800' }} transition-all">
+            <a href="{{ route('admin.members.list') }}" class="block px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.members.*') ? 'bg-blue-600 font-medium text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800' }} transition-all">
                 Member
             </a>
-            <a href="" class="block px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.contestants.*') ? 'bg-blue-600 font-medium text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800' }} transition-all">
+            <a href="{{ route('admin.contestants.list') }}" class="block px-4 py-2.5 rounded-lg {{ request()->routeIs('admin.contestants.*') ? 'bg-blue-600 font-medium text-white' : 'text-slate-400 hover:text-white hover:bg-slate-800' }} transition-all">
                 Contestants
             </a>
         </nav>
