@@ -13,7 +13,7 @@ use App\Http\Controllers\Member\MemberController;
 Route::get('/project', function () {
 
     return view('backup-page.project-flow');
-
+      return view('backup-page.project-flow');
 });
 
 // =======================================================================
