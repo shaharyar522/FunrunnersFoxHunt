@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Region;
 use Illuminate\Database\Seeder;
 use App\Models\Voting;
 use App\Models\Contestant;
@@ -18,9 +19,15 @@ class DummyDataSeeder extends Seeder
         // -----------------------------
         // 1. Contestants & Users
         // -----------------------------
-        $regions = ['Islamabad', 'Lahore', 'Karachi', 'Peshawar', 'Quetta', 'Multan', 'Faisalabad'];
+        $regionNames = ['North America', 'South America', 'Europe', 'Africa', 'Asia', 'Oceania'];
+        $regionIds = [];
 
-        for ($i = 1; $i <= 7; $i++) {
+        foreach ($regionNames as $regionName) {
+            $region = Region::firstOrCreate(['name' => $regionName]);
+            $regionIds[] = $region->id;
+        }
+
+        for ($i = 1; $i <= 6; $i++) {
             $user = User::create([
                 'name' => 'Contestant ' . $i,
                 'email' => 'contestant' . $i . '@example.com',
@@ -32,7 +39,7 @@ class DummyDataSeeder extends Seeder
                 'user_id' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'region' => $regions[$i - 1],
+                'region_id' => $regionIds[$i - 1],
                 'image' => 'https://i.pravatar.cc/300?img=' . $i, // placeholder image
                 'payment_status' => rand(0, 1), // random paid or not paid
                 'status' => 1, // active
@@ -65,14 +72,14 @@ class DummyDataSeeder extends Seeder
         $voting1 = Voting::create([
             'creationdate' => Carbon::now()->toDateString(),
             'votingdate' => Carbon::now()->addDays(7)->toDateString(),
-            'title' => 'Miss Islamabad – Round 1',
+            'title' => 'Miss North America – Round 1',
             'status' => 0, // Pending
         ]);
 
         $voting2 = Voting::create([
             'creationdate' => Carbon::now()->toDateString(),
             'votingdate' => Carbon::now()->addDays(14)->toDateString(),
-            'title' => 'Miss Lahore – Round 1',
+            'title' => 'Miss Europe – Round 1',
             'status' => 0,
         ]);
 

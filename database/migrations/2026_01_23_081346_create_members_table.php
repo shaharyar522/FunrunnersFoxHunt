@@ -12,15 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('members', function (Blueprint $table) {
-
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->string('name');
             $table->string('email')->unique();
+            $table->timestamp('subscription_ends_at')->nullable();
             $table->tinyInteger('payment_status')->default(0); // 0=not paid, 1=paid (monthly)
             $table->tinyInteger('status')->default(1); // 0=inactive/blocked, 1=active
             $table->timestamps();
-
         });
     }
 

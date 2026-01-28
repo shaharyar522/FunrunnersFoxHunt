@@ -3,6 +3,17 @@
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center px-4 py-12">
     <div class="max-w-md w-full">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-white mb-2">Member Subscription</h1>
+                <p class="text-slate-300">Access exclusive voting and support your favorite contestants.</p>
+            </div>
+            
+            <div class="bg-white/10 backdrop-blur-xl p-8 rounded-3xl border border-white/20 shadow-2xl">
+                <div class="text-center mb-8">
+                    <span class="text-5xl font-bold text-white">$5</span>
+                    <span class="text-slate-400">/monthly</span>
+                </div>
+
                 <form action="{{ route('member.onboarding.pay') }}" method="POST">
                     @csrf
                     <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center space-x-2">
@@ -21,13 +32,13 @@
                     <span>Secure payment powered by Stripe</span>
                 </div>
             </div>
-        </div>
 
-        <!-- Info Note -->
-        <div class="mt-6 text-center">
-            <p class="text-white text-sm opacity-80">
-                By subscribing, you agree to our terms of service
-            </p>
+            <!-- Info Note -->
+            <div class="mt-8 text-center">
+                <p class="text-white text-sm opacity-60">
+                    By subscribing, you agree to our terms of service
+                </p>
+            </div>
         </div>
     </div>
 </div>

@@ -24,6 +24,20 @@
                    required>
         </div>
 
+        <!-- Region (For Automatic Addition) -->
+        <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2">Region (Automatic Addition)</label>
+            <select name="region_id" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="">-- No Region (Manual / Global) --</option>
+                @foreach($regions as $region)
+                    <option value="{{ $region->id }}" {{ old('region_id') == $region->id ? 'selected' : '' }}>
+                        {{ $region->name }}
+                    </option>
+                @endforeach
+            </select>
+            <p class="text-xs text-gray-500 mt-1">If selected, all approved contestants from this region will be added automatically.</p>
+        </div>
+
         <!-- Status -->
         <div class="mb-4">
             <label class="block text-gray-700 font-medium mb-2">Status</label>

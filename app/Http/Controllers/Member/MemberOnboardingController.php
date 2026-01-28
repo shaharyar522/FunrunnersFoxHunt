@@ -65,6 +65,7 @@ class MemberOnboardingController extends Controller
                 'name' => $user->name,
                 'email' => $user->email,
                 'payment_status' => 1,
+                'subscription_ends_at' => now()->addMonth(),
                 'status' => 1, // Active member
             ]
         );

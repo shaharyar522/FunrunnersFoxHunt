@@ -13,12 +13,14 @@ use App\Http\Controllers\Member\MemberController;
 Route::get('/project', function () {
 
     return view('backup-page.project-flow');
-      return view('backup-page.project-flow');
+
 });
 
 // =======================================================================
 
 Route::get('/', [indexController::class, 'index']);
+Route::get('/live-results', [App\Http\Controllers\PublicResultsController::class, 'index'])->name('public.results.index');
+Route::get('/live-results/{id}', [App\Http\Controllers\PublicResultsController::class, 'show'])->name('public.results.show');
 
 
 // ================================================= login with Social icon =================================================
@@ -42,13 +44,24 @@ Route::get('login/facebook', [SocialController::class, 'redirectToFacebookMock']
 // ================================================= Dashboards =================================================
 
 // Contestant Dashboard (requires payment)
+
 Route::middleware(['auth', 'unpaid_contestant'])->group(function () {
+
     Route::get('/contestant-dashboard', [App\Http\Controllers\Contestant\ContestantController::class, 'dashboard'])->name('contestant.dashboard');
+    Route::get('/contestant/questions', [App\Http\Controllers\QuestionController::class, 'contestantIndex'])->name('contestant.questions.index');
+        Route::post('/contestant/questions/{question}/answer', [App\Http\Controllers\QuestionController::class, 'answer'])->name('contestant.questions.answer');
+
 });
 
 // Member Dashboard (requires subscription)
 Route::middleware(['auth', 'unpaid_member'])->group(function () {
+
     Route::get('/member-dashboard', [App\Http\Controllers\Member\MemberController::class, 'dashboard'])->name('member.dashboard');
+    Route::get('/member/voting/{voting}', [App\Http\Controllers\Member\MemberController::class, 'showVotingRound'])->name('member.voting.show');
+    Route::post('/member/vote/{voting}/{contestant}', [App\Http\Controllers\VoteController::class, 'store'])->name('member.vote.store');
+    Route::get('/member/results/{voting}', [App\Http\Controllers\Member\MemberController::class, 'liveResults'])->name('member.results.show');
+    Route::post('/member/contestant/{contestant}/question', [App\Http\Controllers\QuestionController::class, 'store'])->name('member.contestant.question.store');
+
 });
 
 // Contestant Onboarding Routes
@@ -92,6 +105,13 @@ Route::prefix('admin')->group(function () {
         Route::get('/contestant-dashboard', [ContestantController::class, 'dashboard'])->name('contestant.dashboard');
         Route::get('/member-dashboard', [MemberController::class, 'dashboard'])->name('member.dashboard');
        
+        // Regions Management
+        Route::get('regions', [App\Http\Controllers\Admin\RegionController::class, 'index'])->name('admin.regions.index');
+        Route::get('regions/create', [App\Http\Controllers\Admin\RegionController::class, 'create'])->name('admin.regions.create');
+        Route::post('regions', [App\Http\Controllers\Admin\RegionController::class, 'store'])->name('admin.regions.store');
+        Route::get('regions/{region}/edit', [App\Http\Controllers\Admin\RegionController::class, 'edit'])->name('admin.regions.edit');
+        Route::put('regions/{region}', [App\Http\Controllers\Admin\RegionController::class, 'update'])->name('admin.regions.update');
+        Route::delete('regions/{region}', [App\Http\Controllers\Admin\RegionController::class, 'destroy'])->name('admin.regions.destroy');
 
     });
 
@@ -99,8 +119,6 @@ Route::prefix('admin')->group(function () {
 
 
 // ================================================================================= Admin Routes =================================================================================
-
-
 
 
 // ================================================= Voting Routes =================================================
@@ -113,8 +131,11 @@ Route::prefix('admin')->middleware('auth')->group(function () {
     Route::get('/voting', [VotingController::class, 'index'])
         ->name('admin.voting.list');
 
-        Route::post('/voting/status/{id}', [VotingController::class, 'changeStatus'])
+    Route::post('/voting/status/{id}', [VotingController::class, 'changeStatus'])
     ->name('admin.voting.status');
+
+    Route::post('/voting/sync-end-times', [VotingController::class, 'syncEndTimes'])
+    ->name('admin.voting.sync');
 
 
     // create voting
@@ -127,5 +148,8 @@ Route::prefix('admin')->middleware('auth')->group(function () {
 
     // Toggle contestant status inside voting (AJAX optional)
 Route::post('/voting-contestant/toggle/{id}', [VotingController::class, 'toggleContestantStatus'])->name('admin.votingContestant.toggle');
+Route::post('/voting/promote', [VotingController::class, 'promoteContestant'])->name('admin.voting.promote');
+Route::get('/voting/export/{id}', [VotingController::class, 'exportResults'])->name('admin.voting.export');
+Route::delete('/voting/votes/{id}', [VotingController::class, 'destroyVotes'])->name('admin.voting.destroyVotes');
 
 });

@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('contestants', function (Blueprint $table) {
-            $table->integer('age')->nullable()->after('region_id');
-            $table->text('bio')->nullable()->after('age');
+        Schema::table('votings', function (Blueprint $table) {
+            $table->dateTime('closed_at')->nullable();
         });
     }
 
@@ -22,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('contestants', function (Blueprint $table) {
-            $table->dropColumn(['age', 'bio']);
+        Schema::table('votings', function (Blueprint $table) {
+            
         });
     }
 };

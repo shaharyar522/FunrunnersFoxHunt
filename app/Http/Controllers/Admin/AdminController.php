@@ -81,7 +81,7 @@ class AdminController extends Controller
     public function contestantsList()
     {
 
-        $contestants = Contestant::all();
+        $contestants = Contestant::with('region')->get();
         return view('admin.contestants.list', compact('contestants'));
 
     }

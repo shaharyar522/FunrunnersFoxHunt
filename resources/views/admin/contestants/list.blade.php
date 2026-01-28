@@ -28,7 +28,7 @@
                     </td>
                     <td class="px-8 py-5 text-sm font-medium text-gray-900">{{ $contestant->name }}</td>
                     <td class="px-8 py-5 text-sm text-gray-600">{{ $contestant->email }}</td>
-                    <td class="px-8 py-5 text-sm text-gray-600">{{ $contestant->region }}</td>
+                    <td class="px-8 py-5 text-sm text-gray-600">{{ $contestant->region->name ?? 'N/A' }}</td>
                     <td class="px-8 py-5">
                         @if($contestant->payment_status == 1)
                             <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">Paid ($5)</span>

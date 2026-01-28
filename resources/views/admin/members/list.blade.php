@@ -4,6 +4,7 @@
 @section('page_title', 'Member Management')
 
 @section('content')
+
 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
     <div class="px-8 py-6 border-b border-gray-100 flex justify-between items-center">
         <h2 class="text-lg font-semibold text-gray-800">All Members (Voters)</h2>
@@ -26,12 +27,17 @@
                     <td class="px-8 py-5 text-sm font-medium text-gray-900">{{ $member->name }}</td>
                     <td class="px-8 py-5 text-sm text-gray-600">{{ $member->email }}</td>
                     <td class="px-8 py-5">
-                        @if($member->payment_status == 1)
-                            <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">Paid</span>
-                        @else
-                            <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">Unpaid</span>
-                        @endif
-                    </td>
+    @if($member->subscription_ends_at && now()->lte($member->subscription_ends_at))
+        <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+            Paid until {{ \Carbon\Carbon::parse($member->subscription_ends_at)->format('Y-m-d') }}
+        </span>
+    @else
+        <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+            Expired
+        </span>
+    @endif
+</td>
+
                     <td class="px-8 py-5 text-sm text-gray-600">{{ $member->created_at->format('Y-m-d') }}</td>
                 </tr>
                 @endforeach
@@ -39,4 +45,5 @@
         </table>
     </div>
 </div>
+
 @endsection

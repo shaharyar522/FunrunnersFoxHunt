@@ -75,12 +75,11 @@
                         <div class="relative">
                             <select name="region" class="w-full px-5 py-4 rounded-xl border-2 @error('region') border-red-300 @else border-slate-100 @enderror bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all text-slate-800 font-medium appearance-none cursor-pointer" required>
                                 <option value="" class="text-slate-400">Select your region</option>
-                                <option value="North America" {{ old('region') == 'North America' ? 'selected' : '' }} class="text-slate-900 bg-white py-2">North America</option>
-                                <option value="South America" {{ old('region') == 'South America' ? 'selected' : '' }} class="text-slate-900 bg-white py-2">South America</option>
-                                <option value="Europe" {{ old('region') == 'Europe' ? 'selected' : '' }} class="text-slate-900 bg-white py-2">Europe</option>
-                                <option value="Africa" {{ old('region') == 'Africa' ? 'selected' : '' }} class="text-slate-900 bg-white py-2">Africa</option>
-                                <option value="Asia" {{ old('region') == 'Asia' ? 'selected' : '' }} class="text-slate-900 bg-white py-2">Asia</option>
-                                <option value="Oceania" {{ old('region') == 'Oceania' ? 'selected' : '' }} class="text-slate-900 bg-white py-2">Oceania</option>
+                                @foreach($regions as $region)
+                                    <option value="{{ $region->id }}" {{ old('region') == $region->id ? 'selected' : '' }} class="text-slate-900 bg-white py-2">
+                                        {{ $region->name }}
+                                    </option>
+                                @endforeach
                             </select>
                             <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>

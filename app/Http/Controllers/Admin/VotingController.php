@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Voting;
 use App\Models\VotingContestant;
+use App\Models\Vote;
+use App\Models\Region;
+use App\Models\Contestant;
 use Carbon\Carbon;
 
 
@@ -14,73 +17,118 @@ class VotingController extends Controller
     public function index()
     {
         $votings = Voting::orderBy('creationdate', 'desc')->get();
-        return view('admin.voting.list', compact('votings'));
+        $regions = Region::all();
+        return view('admin.voting.list', compact('votings', 'regions'));
     }
 
   
-public function changeStatus($id)
-{
-    $voting = Voting::findOrFail($id);
- // now es main  agr voting ka scene hain. agr 
-    // voting status = 0 hnga tu pending , 1 open or close 0
+    public function changeStatus($id)
+    {
+        $voting = Voting::findOrFail($id);
+        
+        // 0=pending, 1=open, 2=close
+        if ($voting->status == 0) {
+            $voting->status = 1; // Pending → Open
+        } elseif ($voting->status == 1) {
+            $voting->status = 2; // Open → Closed
+            // Note: Requirements say "Votes Deleted after round ends". 
+            // We could automate it here, but it's safer to keep as a separate action for admin to check results first.
+        } else {
+            $voting->status = 0; // Closed → Pending
+        }
 
-    // jb pending par click kary guy tu wo open ho jay ga , or agr open par click kary guy tu wo close ho jay ga
-    if ($voting->status == 0) {
-        $voting->status = 1; // Pending → Open
-    } elseif ($voting->status == 1) {
-        $voting->status = 2; // Open → Closed
-    } else {
-        $voting->status = 0; // Closed → Pending
+        $voting->save();
+
+        return back()->with('success', 'Voting status updated to ' . ($voting->status == 1 ? 'Open' : ($voting->status == 2 ? 'Closed' : 'Pending')));
     }
 
-    $voting->save();
+    /**
+     * Sync all open rounds to have the same end time.
+     */
+    public function syncEndTimes(Request $request)
+    {
+        $request->validate([
+            'closed_at' => 'required|date'
+        ]);
 
-    return back()->with('success', 'Voting status updated');
-}
+        Voting::where('status', 1)->update(['closed_at' => $request->closed_at]);
+
+        return back()->with('success', 'All open voting rounds have been synced to the new end time.');
+    }
 
 
  // Show Add Voting Form
     public function create()
     {
-        return view('admin.voting.create');
+        $regions = Region::all();
+        return view('admin.voting.create', compact('regions'));
     }
 
 
-     // Store Voting
     public function store(Request $request)
     {
         $request->validate([
             'title' => 'required|string|max:255',
             'votingdate' => 'required|date',
+            'closed_at' => 'nullable|date',
+            'region_id' => 'nullable|exists:regions,id',
         ]);
 
-        Voting::create([
-
+        $voting = Voting::create([
             'title' => $request->title,
             'creationdate' => Carbon::now()->toDateString(),
             'votingdate' => $request->votingdate,
-            'status' => $request->status ?? 0, // Pending => 0 , open => 1, close => 0
-
+            'closed_at' => $request->closed_at,
+            'status' => $request->status ?? 0, // Pending => 0 , open => 1, close => 2
+            'region_id' => $request->region_id,
         ]);
 
+        // AUTOMATIC ADDITION: If a region is selected, add all approved contestants
+        if ($request->region_id) {
+            $contestants = Contestant::where('region_id', $request->region_id)
+                                    ->where('status', 1) // Approved
+                                    ->get();
+
+            foreach ($contestants as $contestant) {
+                VotingContestant::create([
+                    'voting_id' => $voting->voting_id,
+                    'contestant_id' => $contestant->id,
+                    'status' => 1, // Active in round
+                    'payments' => 0
+                ]);
+            }
+        }
+
         return redirect()->route('admin.voting.list')
-           ->with('success', 'Voting round added successfully!');
+           ->with('success', 'Voting round added successfully' . ($request->region_id ? ' with ' . $contestants->count() . ' contestants.' : '.'));
     }
 
 // ============ detials show model =========================================
     public function detail($id)
-{
-    // Get voting with contestants
-    $voting = Voting::with(['votingContestants.contestant'])->findOrFail($id);
+    {
+        // Get voting with contestants
+        $voting = Voting::with(['votingContestants' => function($q) {
+            $q->with('contestant');
+        }])->findOrFail($id);
+        
+        // Load vote counts manually for monitoring
+        foreach($voting->votingContestants as $vc) {
+            $vc->vote_count = Vote::where('voting_id', $id)
+                                 ->where('contestant_id', $vc->contestant_id)
+                                 ->count();
+        }
 
-    // Return HTML for AJAX modal
-    if(request()->ajax()){
-        return view('admin.voting.detail', compact('voting'))->render();
+        // Get other open/pending rounds for promotion
+        $otherRounds = Voting::where('voting_id', '!=', $id)->whereIn('status', [0, 1])->get();
+
+        // Return HTML for AJAX modal
+        if(request()->ajax()){
+            return view('admin.voting.detail', compact('voting', 'otherRounds'))->render();
+        }
+
+        // fallback
+        return view('admin.voting.detail', compact('voting', 'otherRounds'));
     }
-
-    // fallback
-    return view('admin.voting.detail', compact('voting'));
-}
 
 // Toggle contestant status
 public function toggleContestantStatus($id)
@@ -94,5 +142,83 @@ public function toggleContestantStatus($id)
         'status' => $vc->status
     ]);
 }
+
+    // Delete All Votes for a Round
+    public function destroyVotes($id)
+    {
+        $voting = Voting::findOrFail($id);
+        
+        // Delete dependent votes
+        Vote::where('voting_id', $id)->delete();
+
+        return back()->with('success', 'All votes for this round have been deleted.');
+    }
+
+    /**
+     * Promote a contestant to another voting round (e.g., Global Finals)
+     */
+    public function promoteContestant(Request $request)
+    {
+        $request->validate([
+            'contestant_id' => 'required|exists:contestants,id',
+            'target_voting_id' => 'required|exists:votings,voting_id',
+        ]);
+
+        // Check if already in the target round
+        $exists = VotingContestant::where('voting_id', $request->target_voting_id)
+            ->where('contestant_id', $request->contestant_id)
+            ->exists();
+
+        if ($exists) {
+            return response()->json(['success' => false, 'message' => 'Contestant is already in that round.']);
+        }
+
+        VotingContestant::create([
+            'voting_id' => $request->target_voting_id,
+            'contestant_id' => $request->contestant_id,
+            'status' => 1, // Active by default in the new round
+            'payments' => 0,
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Contestant promoted successfully!']);
+    }
+
+    /**
+     * Export voting results to CSV
+     */
+    public function exportResults($id)
+    {
+        $voting = Voting::findOrFail($id);
+        $results = Vote::where('voting_id', $id)
+            ->select('contestant_id', \Illuminate\Support\Facades\DB::raw('count(*) as total_votes'))
+            ->groupBy('contestant_id')
+            ->orderByDesc('total_votes')
+            ->with(['contestant'])
+            ->get();
+
+        $filename = "voting_results_" . str_replace(' ', '_', strtolower($voting->title)) . ".csv";
+        $handle = fopen('php://memory', 'w');
+        
+        // CSV Header
+        fputcsv($handle, ['Rank', 'Contestant Name', 'Email', 'Region', 'Total Votes']);
+
+        foreach ($results as $index => $result) {
+            fputcsv($handle, [
+                $index + 1,
+                $result->contestant->name,
+                $result->contestant->email,
+                $result->contestant->region->name ?? 'N/A',
+                $result->total_votes
+            ]);
+        }
+
+        rewind($handle);
+        $content = stream_get_contents($handle);
+        fclose($handle);
+
+        return response($content)
+            ->header('Content-Type', 'text/csv')
+            ->header('Content-Disposition', "attachment; filename={$filename}");
+    }
 
 }

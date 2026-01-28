@@ -39,9 +39,13 @@ class Contestant extends Model
         return $this->hasMany(VotingContestant::class, 'contestant_id');
     }
 
-     public function region()
-{
-    return $this->belongsTo(Region::class);
-}
+    public function region()
+    {
+        return $this->belongsTo(Region::class);
+    }
 
+    public function questions()
+    {
+        return $this->hasMany(Question::class);
+    }
 }

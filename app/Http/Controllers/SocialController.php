@@ -110,7 +110,26 @@ class SocialController extends Controller
     {
         // Assuming your users table has a 'role' column: 'contestant', 'member', 'admin'
         if ($user->role == 'contestant') return redirect()->route('contestant.dashboard');
-        if ($user->role == 'member') return redirect()->route('member.dashboard');
+        
+        if ($user->role == 'member') {
+            // Automatically create or update member record with 1 month validation on login
+            $member = \App\Models\Member::where('user_id', $user->id)->first();
+            
+            if (!$member || !$member->subscription_ends_at) {
+                \App\Models\Member::updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'payment_status' => 1,
+                        'subscription_ends_at' => now()->addMonth(),
+                        'status' => 1, // Active
+                    ]
+                );
+            }
+            return redirect()->route('member.dashboard');
+        }
+
         return redirect()->route('admin.dashboard');
     }
 

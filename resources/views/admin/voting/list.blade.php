@@ -6,12 +6,18 @@
 @section('content')
 <div id="voting-list-view">
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-8 py-6 border-b border-gray-100 flex justify-between items-center">
+        <div class="px-8 py-6 border-b border-gray-100 flex flex-wrap justify-between items-center gap-4">
             <h2 class="text-lg font-semibold text-gray-800">Voting Rounds</h2>
-            <button onclick="openModal()"
-                class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-all">
-                + Add New Voting
-            </button>
+            <div class="flex items-center gap-4">
+                <button onclick="openSyncModal()"
+                    class="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-100 transition-all border border-indigo-200">
+                    🔄 Sync Regional End Times
+                </button>
+                <button onclick="openModal()"
+                    class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-all shadow-sm">
+                    + Add New Voting
+                </button>
+            </div>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-left">
@@ -43,13 +49,22 @@
                                     @endif
                                 </button>
                             </form>
+
                         </td>
-                        <td class="px-8 py-5">
+                        <td class="px-8 py-5 flex items-center space-x-4">
                             <a href="javascript:void(0);" 
                                onclick="openVotingDetail({{ $voting->voting_id }})"
                                class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                               View Details
+                                View Details
                             </a>
+                            <form action="{{ route('admin.voting.destroyVotes', $voting->voting_id) }}" method="POST" onsubmit="return confirm('Are you sure you want to PERMANENTLY DELETE current votes for this round? This action cannot be undone.');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-red-500 hover:text-red-700 text-sm font-medium flex items-center" title="Delete all votes for this round">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    Reset Votes
+                                </button>
+                            </form>
                         </td>
                     </tr>
                     @endforeach
@@ -77,6 +92,7 @@
         <form id="addVotingForm" action="{{ route('admin.voting.store') }}" method="POST">
             @csrf
             <div class="mb-4">
+                
                 <label class="block text-gray-700 font-medium mb-2">Title</label>
                 <input type="text" name="title" value="{{ old('title') }}"
                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -87,6 +103,22 @@
                 <input type="date" name="votingdate" value="{{ old('votingdate') }}"
                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                        required>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-medium mb-2">Voting End Time (Global Sync)</label>
+                <input type="datetime-local" name="closed_at" value="{{ old('closed_at') }}"
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <p class="text-xs text-gray-500 mt-1">Voting will automatically close at this time.</p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 font-medium mb-2">Region (Automatic Addition)</label>
+                <select name="region_id" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">-- No Region (Manual) --</option>
+                    @foreach($regions as $region)
+                        <option value="{{ $region->id }}">{{ $region->name }}</option>
+                    @endforeach
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Approved contestants from this region will be added instantly.</p>
             </div>
             <div class="mb-4">
                 <label class="block text-gray-700 font-medium mb-2">Status</label>
@@ -116,6 +148,31 @@
 </script>
 @endif
 
+<!-- Sync Modal -->
+<div id="syncModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
+        <button onclick="closeSyncModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 font-bold text-lg">&times;</button>
+        <h2 class="text-xl font-semibold mb-2">Sync End Times</h2>
+        <p class="text-sm text-gray-500 mb-6">This will update <span class="font-bold text-indigo-600">ALL currently OPEN</span> regional rounds to end at the same time.</p>
+        
+        <form action="{{ route('admin.voting.sync') }}" method="POST">
+            @csrf
+            <div class="mb-6">
+                <label class="block text-gray-700 font-medium mb-2">Global End Time</label>
+                <input type="datetime-local" name="closed_at" 
+                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                       required>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button type="button" onclick="closeSyncModal()" class="px-4 py-2 text-gray-600 font-medium">Cancel</button>
+                <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-all font-bold">
+                    Sync All Rounds
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
 function openModal() {
     document.getElementById('addVotingModal').classList.remove('hidden');
@@ -124,6 +181,15 @@ function openModal() {
 function closeModal() {
     document.getElementById('addVotingModal').classList.remove('flex');
     document.getElementById('addVotingModal').classList.add('hidden');
+}
+
+function openSyncModal() {
+    document.getElementById('syncModal').classList.remove('hidden');
+    document.getElementById('syncModal').classList.add('flex');
+}
+function closeSyncModal() {
+    document.getElementById('syncModal').classList.remove('flex');
+    document.getElementById('syncModal').classList.add('hidden');
 }
 
 function openVotingDetail(votingId) {
@@ -187,6 +253,52 @@ function toggleContestantStatus(id, btn) {
         loader.classList.add('hidden');
         btn.classList.remove('hidden');
         Swal.fire({ icon: 'error', title: 'Error', text: 'Failed to update status.' });
+    });
+}
+function promoteContestant(contestantId) {
+    const targetRoundId = document.getElementById('target-round-' + contestantId).value;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    if (!targetRoundId) {
+        Swal.fire({ icon: 'warning', title: 'Wait', text: 'Please select a round to move her to.' });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Move Contestant?',
+        text: "She will be added to the selected round.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, move her!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            fetch(`/admin/voting/promote`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    contestant_id: contestantId,
+                    target_voting_id: targetRoundId
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Success!', data.message, 'success');
+                } else {
+                    Swal.fire('Error', data.message, 'error');
+                }
+            })
+            .catch(err => {
+                console.error('Promotion error:', err);
+                Swal.fire('Error', 'Something went wrong.', 'error');
+            });
+        }
     });
 }
 </script>

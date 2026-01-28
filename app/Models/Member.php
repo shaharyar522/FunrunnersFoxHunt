@@ -14,7 +14,12 @@ class Member extends Model
         'name',
         'email',
         'payment_status',
+        'subscription_ends_at',
         'status',
+    ];
+
+    protected $casts = [
+        'subscription_ends_at' => 'datetime',
     ];
 
     public function user()

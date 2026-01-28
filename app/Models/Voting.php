@@ -12,7 +12,9 @@ class Voting extends Model
         'creationdate',
         'votingdate',
         'title',
-        'status'
+        'status',
+        'region_id',
+        'closed_at'
     ];
 
     public function votingContestants()
